@@ -29,20 +29,20 @@ jobs:
       if: steps.filter.outcome == 'success'
       id: get-magic-value
       run: |
-        const comment = process.env.PR_COMMENT || '';
-        const magicComment = process.env.MAGIC_COMMENT;
-        const regex = new RegExp(`${magicComment}\\s+(\\S+)`);
-        const match = comment.match(regex);
-        if (match) {
-          console.log(`::set-output name=VAL_FOUND::true`);
-          console.log(`::set-output name=MAGIC_VAL::${match[1]}`);
-        } else {
-          console.log(`::set-output name=VAL_FOUND::false`);
-        }
+        echo "const comment = process.env.PR_COMMENT || '';" > script.js
+        echo "const magicComment = process.env.MAGIC_COMMENT;" >> script.js
+        echo "const regex = new RegExp(\`${magicComment}\\s+(\\\\S+)\`);" >> script.js
+        echo "const match = comment.match(regex);" >> script.js
+        echo "if (match) {" >> script.js
+        echo "  console.log('::set-output name=VAL_FOUND::true');" >> script.js
+        echo "  console.log(`::set-output name=MAGIC_VAL::${match[1]}`);" >> script.js
+        echo "} else {" >> script.js
+        echo "  console.log('::set-output name=VAL_FOUND::false');" >> script.js
+        echo "}" >> script.js
+        node script.js
       env:
         PR_COMMENT: ${{ github.event.comment.body }}
         MAGIC_COMMENT: ${{ env.MAGIC_COMMENT }}
-        
     - name: print value of magic command
       if:  steps.get-magic-value.outcome == 'success' && steps.get-magic-value.outputs.VAL_FOUND == 'true'
       run: echo "the value is ${{ steps.get-magic-value.outputs.MAGIC_VAL }}"
