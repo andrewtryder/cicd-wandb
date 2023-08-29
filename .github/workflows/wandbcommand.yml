@@ -31,15 +31,11 @@ jobs:
       run: |
         echo "const fs = require('fs');" > script.js
         echo "const comment = process.env.PR_COMMENT || '';" >> script.js
-        echo "console.log('Comment:', comment);" >> script.js
         echo "const magicComment = process.env.MAGIC_COMMENT;" >> script.js
-        echo "console.log('Magic Comment:', magicComment);" >> script.js
         echo "const regex = new RegExp(\`${magicComment}\\\\s+(\\\\S+)\`);" >> script.js
-        echo "console.log('Regex:', regex);" >> script.js
         echo "const match = comment.match(regex);" >> script.js
-        echo "console.log('Match:', match);" >> script.js
         echo "if (match) {" >> script.js
-        echo "  fs.writeFileSync('${{ github.workspace }}/get-magic-value-outputs.txt', `VAL_FOUND=true\nMAGIC_VAL=${match[1]}`);" >> script.js
+        echo "  fs.writeFileSync('${{ github.workspace }}/get-magic-value-outputs.txt', 'VAL_FOUND=true\\nMAGIC_VAL=' + match[1]);" >> script.js
         echo "} else {" >> script.js
         echo "  fs.writeFileSync('${{ github.workspace }}/get-magic-value-outputs.txt', 'VAL_FOUND=false');" >> script.js
         echo "}" >> script.js
