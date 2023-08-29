@@ -34,7 +34,7 @@ jobs:
         echo "console.log('Comment:', comment);" >> script.js
         echo "const magicComment = process.env.MAGIC_COMMENT;" >> script.js
         echo "console.log('Magic Comment:', magicComment);" >> script.js
-        echo "const regex = new RegExp(\`${magicComment}\\s+(\\\\S+)\`);" >> script.js
+        echo "const regex = new RegExp(\`\\\\${magicComment}\\\\s+(\\\\S+)\`);" >> script.js
         echo "console.log('Regex:', regex);" >> script.js
         echo "const match = comment.match(regex);" >> script.js
         echo "console.log('Match:', match);" >> script.js
