@@ -1,5 +1,5 @@
-name: ChatOps # change the name test just to create a PR.
-on: issue_comment # this is used for PRs https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows#pull_request_review
+name: wandbcommand 
+on: issue_comment 
 
 permissions:
   contents: read
@@ -7,12 +7,11 @@ permissions:
   pull-requests: write
 
 env:
-  MAGIC_COMMENT: "/wandb" # this is a parameter you can change
+  MAGIC_COMMENT: "/wandb" 
 
 
 jobs:
   see-comment:
-    # this filters for only comments made on a pull request
     if: (github.event.issue.pull_request != null)
     runs-on: ubuntu-latest
     steps:
@@ -29,27 +28,20 @@ jobs:
     - name: Parse value from the magic command
       if: steps.filter.outcome == 'success'
       id: get-magic-value
+      shell: python
       run: |
-        echo "const fs = require('fs');" > script.js
-        echo "const comment = process.env.PR_COMMENT || '';" >> script.js
-        echo "const magicComment = process.env.MAGIC_COMMENT;" >> script.js
-        echo "const regex = new RegExp(\`${magicComment}\\\\s+(\\\\S+)\`);" >> script.js
-        echo "const match = comment.match(regex);" >> script.js
-        echo "if (match) {" >> script.js
-        echo "  fs.writeFileSync('${{ github.workspace }}/get-magic-value-outputs.txt', 'VAL_FOUND=true\\nMAGIC_VAL=' + match[1]);" >> script.js
-        echo "} else {" >> script.js
-        echo "  fs.writeFileSync('${{ github.workspace }}/get-magic-value-outputs.txt', 'VAL_FOUND=false');" >> script.js
-        echo "}" >> script.js
-        node script.js
+        import re, os
+        comment = os.getenv('PR_COMMENT', '')
+        match = re.search('${{ env.MAGIC_COMMENT }}[\s+](\S+)', comment)
+        with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
+          if match:
+            print(f'VAL_FOUND=true', file=f)
+            print(f'MAGIC_VAL={match.group(1)}', file=f)
+          else:
+            print(f'VAL_FOUND=false', file=f)
       env:
         PR_COMMENT: ${{ github.event.comment.body }}
-        MAGIC_COMMENT: ${{ env.MAGIC_COMMENT }}
-    
-    - name: Set outputs from Environment File
-      run: |
-        if [[ -f "${{ github.workspace }}/get-magic-value-outputs.txt" ]]; then
-          cat "${{ github.workspace }}/get-magic-value-outputs.txt" >> $GITHUB_ENV
-        fi
+        
     - name: print value of magic command
       if:  steps.get-magic-value.outcome == 'success' && steps.get-magic-value.outputs.VAL_FOUND == 'true'
       run: echo "the value is ${{ steps.get-magic-value.outputs.MAGIC_VAL }}"
@@ -59,12 +51,12 @@ jobs:
       if: steps.get-magic-value.outcome == 'success' 
       with:
         script: |
-           var msg = `👋 Hello!  You commented on this PR with a magic value of \`${process.env.MAGIC_VAL}\``;
+           var msg = `👋 Hello!  You commented on this PR with a magic value of \`${process.env.MAGIC_VAL}\``
            github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
               body: msg
-            });
+            })
       env:
         MAGIC_VAL: "${{ steps.get-magic-value.outputs.MAGIC_VAL }}"
