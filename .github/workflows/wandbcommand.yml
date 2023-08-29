@@ -29,20 +29,26 @@ jobs:
       if: steps.filter.outcome == 'success'
       id: get-magic-value
       run: |
-        echo "const comment = process.env.PR_COMMENT || '';" > script.js
+        echo "const fs = require('fs');" > script.js
+        echo "const comment = process.env.PR_COMMENT || '';" >> script.js
         echo "const magicComment = process.env.MAGIC_COMMENT;" >> script.js
         echo "const regex = new RegExp(\`${magicComment}\\s+(\\\\S+)\`);" >> script.js
         echo "const match = comment.match(regex);" >> script.js
         echo "if (match) {" >> script.js
-        echo "  console.log('::set-output name=VAL_FOUND::true');" >> script.js
-        echo "  console.log(`::set-output name=MAGIC_VAL::${match[1]}`);" >> script.js
+        echo "  fs.writeFileSync('${{ github.workspace }}/get-magic-value-outputs.txt', `VAL_FOUND=true\nMAGIC_VAL=${match[1]}`);" >> script.js
         echo "} else {" >> script.js
-        echo "  console.log('::set-output name=VAL_FOUND::false');" >> script.js
+        echo "  fs.writeFileSync('${{ github.workspace }}/get-magic-value-outputs.txt', 'VAL_FOUND=false');" >> script.js
         echo "}" >> script.js
         node script.js
       env:
         PR_COMMENT: ${{ github.event.comment.body }}
         MAGIC_COMMENT: ${{ env.MAGIC_COMMENT }}
+    
+    - name: Set outputs from Environment File
+      run: |
+        if [[ -f "${{ github.workspace }}/get-magic-value-outputs.txt" ]]; then
+          cat "${{ github.workspace }}/get-magic-value-outputs.txt" >> $GITHUB_ENV
+        fi
     - name: print value of magic command
       if:  steps.get-magic-value.outcome == 'success' && steps.get-magic-value.outputs.VAL_FOUND == 'true'
       run: echo "the value is ${{ steps.get-magic-value.outputs.MAGIC_VAL }}"
