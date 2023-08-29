@@ -16,7 +16,7 @@ jobs:
     if: (github.event.issue.pull_request != null)
     runs-on: ubuntu-latest
     steps:
-    - name: see payload # this step is for debugging purposes only, so you can see the payload. 
+    - name: see payload 
       run: echo "PAYLOAD:\n${PAYLOAD}\n"
       env:
         PAYLOAD: ${{ toJSON(github.event) }}
