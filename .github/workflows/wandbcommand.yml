@@ -1,4 +1,4 @@
-name: ChatOps
+name: ChatOps # change the name test just to create a PR.
 on: issue_comment # this is used for PRs https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows#pull_request_review
 
 permissions:
@@ -8,6 +8,7 @@ permissions:
 
 env:
   MAGIC_COMMENT: "/wandb" # this is a parameter you can change
+
 
 jobs:
   see-comment:
